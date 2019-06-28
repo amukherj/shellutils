@@ -59,21 +59,22 @@ style() {
   echo -n ${txt}; tput sgr0
 }
 
-# Examples
-style "Hello, there!" "text $green" ul blink
-echo ""
-style "Hello, there!" "text $blue" ul bold
-echo ""
-style "Hello, there!" "text $pink" ul
-echo ""
-style "Hello, there!" "text $sky" blink
-echo ""
-style "Hello, there!" "text $amber" ul em
-echo ""
-style "Hello, there!" "bg $lavender" 
-echo ""
-style "Hello, there!" "bg $white" "text $red" bold
-echo ""
-style "Hello, there!" "text $white" "bg $blue" blink
-echo ""
-
+### Examples
+shellutil_textstyle_run_example() {
+  style "Hello, there!" "text $green" ul blink
+  echo ""
+  style "Hello, there!" "text $blue" ul bold
+  echo ""
+  style "Hello, there!" "text $pink" ul
+  echo ""
+  style "Hello, there!" "text $sky" blink
+  echo ""
+  style "Hello, there!" "text $amber" ul em
+  echo ""
+  style "Hello, there!" "bg $lavender" 
+  echo ""
+  style "Hello, there!" "bg $white" "text $red" bold
+  echo ""
+  style "Hello, there!" "text $white" "bg $blue" blink
+  echo ""
+}
