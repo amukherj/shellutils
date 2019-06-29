@@ -96,7 +96,7 @@ echo_style() {
 ## echo, printf, read -p "..." , etc.
 ## On many terminals, only red, lightred, pink, magenta are properly rendered.
 ## Examples:
-##   str=$(istyle "Hello, world!" lightyellow bold ul)
+##   printf "$(istyle "Hello, world!" red bold ul blink) What's up?\n"
 ##
 istyle() {
   txt=${1}
@@ -152,8 +152,10 @@ shellutil_textstyle_run_example() {
 
   echo "#### istyle"
   str=$(istyle Hello red bold ul)
-  read -p "$str world!" n
+  read -p "$(istyle Hello red bold ul) world!" n
   echo $n
-  printf "$str world!\n"
+  printf "$(istyle Hello red bold ul) world!\n"
+  printf "$(istyle "Hello, world!" red dim ul blink) What's up?\n"
 }
 
+shellutil_textstyle_run_example
