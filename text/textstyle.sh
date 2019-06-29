@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 black=0
 red=1
@@ -7,47 +7,17 @@ yellow=3
 blue=4
 magenta=5
 cyan=6
-lightgray=7
-darkgray=9
-lightred=10
-lightgreen=11
-amber=12
-lightblue=13
-pink=14
-lightcyan=15
-navy=17
-
-iblack=30
-ired=31
-igreen=32
-iyellow=33
-iblue=34
-imagenta=35
-icyan=36
-ilightgray=37
-idarkgray=90
-ilightred=91
-ilightgreen=92
-iamber=93
-ilightblue=94
-ipink=95
-ilightcyan=96
-iwhite=97
-
-ibold=1
-idim=2
-iul=4
-iblink=5
-
-text() {
-  color=${1:-${lightgray}}
-  echo "setaf ${color}"
-}
-
-bg() {
-  color=${1:-${lightgray}}
-  echo "setab ${color}"
-}
+white=7
+grey=8
+lightred=9
+lightgreen=10
+lightyellow=11
+lightblue=12
+pink=13
+lightcyan=14
+offwhite=15
+slate=16
+prussian=17
 
 ul() {
   echo smul
@@ -65,97 +35,78 @@ bold() {
   echo bold
 }
 
-## echo_style: echo a stylized version of the passed text
-## echo the first argument after applying styles
-## passed in the additional arguments.
-## Examples:
-##   echo_style "Hello, world!" "text $green" ul blink bold
-##
-echo_style() {
-  txt=${1}
-  if [ -z "$txt" ]; then
-    return
-  fi
-
+style() {
+  txt=$1
   shift
-  if [ $# -le 0 ]; then
-    return
-  fi
-
-  tput_cmd=""
-  for style in "$@"; do
-     # tput ${style}
-     tput $(eval "${style}")
-  done
-  echo -n ${txt}; tput sgr0
-}
-
-## istyle: inline style.
-## generate stylized version of first argument after applying styles
-## passed in the additional arguments. The result can be printed by
-## echo, printf, read -p "..." , etc.
-## On many terminals, only red, lightred, pink, magenta are properly rendered.
-## Examples:
-##   printf "$(istyle "Hello, world!" red bold ul blink) What's up?\n"
-##
-istyle() {
-  txt=${1}
-  if [ -z "$txt" ]; then
-    return
-  fi
-
-  shift
-  if [ $# -le 0 ]; then
-    return
-  fi
 
   prefix=
-  for style in $@; do
-    newstyle="i${style}"
-    prefix="${prefix}\\\\e[\${${newstyle}}m"
+  for arg in "$@" ; do
+    pref1=${arg:0:3}
+    pref2=${arg:0:2}
+    color=
+    if [ "$pref1" == "col" ]; then
+      color=${arg:3:${#arg}}
+      color=$(eval echo "\$$color")
+    elif [ "$pref2" == "bg" ]; then
+      color=${arg:2:${#arg}}
+      color=$(eval echo "\$$color")
+    fi
+
+    tpcmd=
+    if [ -n "$color" -a "$color" != '$' ]; then
+      if [ $color -ge 0 -a $color -le 17 ]; then
+        if [ "$pref1" == 'col' ]; then
+          tpcmd=$(eval echo "setaf $color")
+        else
+          tpcmd=$(eval echo "setab $color")
+        fi
+      fi
+    else
+      tpcmd=$($arg)
+    fi
+
+    prefix="${prefix}\$(tput ${tpcmd})"
   done
-  suffix="\e[0m"
-  prefix=$(eval echo ${prefix})
-  echo "${prefix}${txt}${suffix}"
+
+  cmd2="echo \"$txt\""
+  suffix="tput sgr0"
+  cmd="$prefix\$($cmd2)\$($suffix)"
+
+  echo -n $(eval echo $cmd)
 }
 
-### Examples
+## Examples of how to use the functions
+## in this library.
 shellutil_textstyle_run_example() {
-  echo_style "Hello, there!" "text $green" ul blink
+  echo "$(style 'Hello, world!' ul) What's up?"
+  printf "%s Hola!\n" "$(style 'Hello, world!' ul bold collightgreen)"
+  read -p "$(style 'Enter your name: ' ul bold collightred)" name
+  echo $name
+
+  style "Hello, there!" "colgreen" ul blink
   echo ""
-  echo_style "Hello, there!" "text $blue" ul bold
+  style "Hello, there!" "colblue" ul bold
   echo ""
-  echo_style "Hello, there!" "text $magenta" ul
+  style "Hello, there!" "colmagenta" ul
   echo ""
-  echo_style "Hello, there!" "text $cyan" blink
+  style "Hello, there!" "colcyan" blink
   echo ""
-  echo_style "Hello, there!" "text $amber" ul em
+  style "Hello, there!" "colyellow" ul em
   echo ""
-  echo_style "Hello, there!" "bg $lavender" 
+  style "Hello, there!" "bgpink"
   echo ""
-  echo_style "Hello, there!" "bg $lightgray" "text $red" bold
+  style "Hello, there!" "bglightgreen" "colred" bold
   echo ""
-  echo_style "Hello, there!" "text $lightgray" "bg $blue" blink
+  style "Hello, there!" "coloffwhite" "bgblue" blink
   echo ""
 
   echo "#### Starts here"
-  for i in {0..17}; do
-    echo_style "INFO: " "text $i"
-    echo "Data written"
-  done
+  style "INFO: " colcyan
+  echo "Data written"
 
-  echo_style "WARN: " "text $amber"
+  style "WARN: " "colyellow"
   echo "Low disk space"
 
-  echo_style "ERROR: " "text $red"
+  style "ERROR: " "colred"
   echo "Permission denied"
-
-  echo "#### istyle"
-  str=$(istyle Hello red bold ul)
-  read -p "$(istyle Hello red bold ul) world!" n
-  echo $n
-  printf "$(istyle Hello red bold ul) world!\n"
-  printf "$(istyle "Hello, world!" red dim ul blink) What's up?\n"
 }
-
-shellutil_textstyle_run_example
